@@ -1,9 +1,9 @@
 {
-    "name": "FunctionParser/FunctionParser",
+    "name": "jeremeamia/FunctionParser",
     "type": "library",
     "description": "Function parser for PHP functions, methods, and closures",
     "keywords": ["function", "closure", "parser", "tokenizer"],
-    "homepage": "https://github.com/jeremeamia/php-function-parser",
+    "homepage": "https://github.com/jeremeamia/FunctionParser",
     "license": "MIT",
     "authors": [
         {

@@ -9,9 +9,6 @@ namespace FunctionParser;
  * Closure, it will also get the names and values of any closed upon variables (i.e. variables in the "use" statement).
  * It relies on PHP lexical scanner, so the PHP tokenizer must be enabled in order to use the library.
  *
- *     $parser = new FunctionParser(new ReflectionFunction());
- *     $code   = $parser->getCode();
- *
  * @package FunctionParser
  * @author  Jeremy Lindblom
  * @license MIT
