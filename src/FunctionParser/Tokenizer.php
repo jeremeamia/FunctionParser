@@ -20,7 +20,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
 
     public function __construct($code)
     {
-        if ( ! function_exists('token_get_all'))
+        if (!function_exists('token_get_all'))
         {
             throw new \RuntimeException('The PHP tokenizer must be enabled to use this class.');
         }
@@ -71,7 +71,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
 
     public function findToken($search, $offset = 0)
     {
-        $offset = (int) $offset;
+        $offset = (integer) $offset;
 
         if ($offset >= 0)
         {
@@ -87,23 +87,23 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
 
         foreach ($tokenizer as $token)
         {
-            if ($token->code === $search OR ($search !== NULL AND $token->name === $search))
+            if ($token->code === $search || ($search !== null && $token->name === $search))
             {
                 return $token;
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     public function hasToken($search)
     {
-        return (bool) $this->findToken($search);
+        return (boolean) $this->findToken($search);
     }
 
     public function getTokenRange($start, $finish)
     {
-        $tokens = array_slice($this->tokens, (int) $start, (int) $finish - (int) $start);
+        $tokens = array_slice($this->tokens, (integer) $start, (integer) $finish - (integer) $start);
 
         return new Tokenizer($tokens);
     }

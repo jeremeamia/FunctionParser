@@ -18,8 +18,6 @@ namespace FunctionParser;
  */
 class FunctionParser
 {
-    const CALLABLE_REGEX = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\:\:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/D';
-
     protected $reflection;
     protected $parameters;
     protected $tokenizer;
@@ -29,11 +27,11 @@ class FunctionParser
 
     public static function fromCallable($callable)
     {
-        if ( ! is_callable($callable))
+        if (!is_callable($callable))
         {
             throw new \InvalidArgumentException('You must provide a vaild PHP callable.');
         }
-        elseif (is_string($callable) && preg_match(static::CALLABLE_REGEX, $callable))
+        elseif (is_string($callable) && strpos($callable, '::') > 0)
         {
             $callable = explode('::', $callable);
         }
@@ -104,8 +102,7 @@ class FunctionParser
     public function _fetchParameters()
     {
         return array_map(
-            function(\ReflectionParameter $param)
-            {
+            function(\ReflectionParameter $param) {
                 return $param->name;
             },
             $this->reflection->getParameters()
@@ -119,7 +116,7 @@ class FunctionParser
 
         // Identify the first and last lines of the code for the function
         $first_line = $this->reflection->getStartLine();
-        $last_line = $this->reflection->getEndLine();
+        $last_line  = $this->reflection->getEndLine();
 
         // Retrieve all of the lines that contain code for the function
         $code = '';
@@ -132,8 +129,8 @@ class FunctionParser
 
         // Eliminate code that is (for sure) not a part of the function
         $beginning = strpos($code, 'function');
-        $ending = strrpos($code, '}');
-        $code = trim(substr($code, $beginning, $ending - $beginning + 1));
+        $ending    = strrpos($code, '}');
+        $code      = trim(substr($code, $beginning, $ending - $beginning + 1));
 
         // Finally, instantiate the tokenizer with the code
         $tokenizer = new Tokenizer($code);
@@ -143,9 +140,9 @@ class FunctionParser
 
     protected function _parseCode()
     {
-        $brace_level = 0;
-        $parsed_code = '';
-        $parsing_complete = FALSE;
+        $brace_level      = 0;
+        $parsed_code      = '';
+        $parsing_complete = false;
 
         // Parse the code looking for the end of the function
         /** @var $token \FunctionParser\Token */
@@ -160,11 +157,10 @@ class FunctionParser
              */
             if ($parsing_complete)
             {
-                if (is_array($token) AND $token->is(T_FUNCTION))
+                if ($token->is(T_FUNCTION))
                 {
-                    throw new \RuntimeException('Cannot parse the function; '
-                      . 'multiple, non-nested functions were defined in the code '
-                      . 'block containing the desired function.');
+                    throw new \RuntimeException('Cannot parse the function; multiple, non-nested functions were defined'
+                        . 'in the code block containing the desired function.');
                 }
                 else
                 {
@@ -190,7 +186,7 @@ class FunctionParser
                 // Once we reach the function's closing brace, mark as complete
                 if ($brace_level === 0)
                 {
-                    $parsing_complete = TRUE;
+                    $parsing_complete = true;
                 }
             }
 
@@ -203,10 +199,9 @@ class FunctionParser
          * problem with the code defining the Closure. This should probably never happen, but just
          * in case...
          */
-        if ( ! $parsing_complete)
+        if (!$parsing_complete)
         {
-            throw new \RuntimeException('Cannot parse the Closure. The code '
-              . 'defining the Closure was found to be invalid.');
+            throw new \RuntimeException('Cannot parse the function because the code appeared to be invalid.');
         }
 
         return $parsed_code;
@@ -216,8 +211,8 @@ class FunctionParser
     {
         // Remove the function signature and outer braces
         $beginning = strpos($this->code, '{');
-        $ending = strrpos($this->code, '}');
-        $body = ltrim(rtrim(substr($this->code, $beginning + 1, $ending - $beginning - 1)), "\n");
+        $ending    = strrpos($this->code, '}');
+        $body      = ltrim(rtrim(substr($this->code, $beginning + 1, $ending - $beginning - 1)), "\n");
 
         return $body;
     }
@@ -226,23 +221,23 @@ class FunctionParser
     {
         $context        = array();
         $variable_names = array();
-        $inside_use     = FALSE;
+        $inside_use     = false;
 
         // Parse the variable names from the "use" contruct by scanning tokens
         /** @var $token \FunctionParser\Token */
         foreach ($this->tokenizer as $token)
         {
-            if ( ! $inside_use AND $token->is(T_USE))
+            if (!$inside_use && $token->is(T_USE))
             {
                 // Once we find the "use" construct, set the flag
-                $inside_use = TRUE;
+                $inside_use = true;
             }
-            elseif ($inside_use AND $token->is(T_VARIABLE))
+            elseif ($inside_use && $token->is(T_VARIABLE))
             {
                 // For variables found in the "use" construct, get the name
                 $variable_names[] = trim($token->getCode(), '$ ');
             }
-            elseif ($inside_use AND $token->isClosingParenthesis())
+            elseif ($inside_use && $token->isClosingParenthesis())
             {
                 // Once we encounter a closing parenthesis at the end of the
                 // "use" construct, then we are finished parsing.

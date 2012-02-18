@@ -28,17 +28,17 @@ class Token implements \Serializable
     {
         if (is_string($token))
         {
-            $this->name  = NULL;
-            $this->value = NULL;
+            $this->name  = null;
+            $this->value = null;
             $this->code  = $token;
-            $this->line  = NULL;
+            $this->line  = null;
         }
         elseif (is_array($token) && in_array(count($token), array(2, 3)))
         {
             $this->name  = token_name($token[0]);
             $this->value = $token[0];
             $this->code  = $token[1];
-            $this->line  = isset($token[2]) ? $token[2] : NULL;
+            $this->line  = isset($token[2]) ? $token[2] : null;
         }
         else
         {
@@ -88,7 +88,7 @@ class Token implements \Serializable
 
     public function isLiteralToken()
     {
-        return ($this->name === NULL);
+        return ($this->name === null && $this->code !== null);
     }
 
     public function is($value)
@@ -103,7 +103,7 @@ class Token implements \Serializable
             return $this->{$key};
         }
 
-        throw new \OutOfBoundsException('The property "'.$key.'" does not exist in Token.');
+        throw new \OutOfBoundsException("The property \"{$key}\" does not exist in Token.");
     }
 
     public function __set($key, $value)
@@ -113,7 +113,7 @@ class Token implements \Serializable
             $this->{$key} = $value;
         }
 
-        throw new \OutOfBoundsException('The property "'.$key.'" does not exist in Token.');
+        throw new \OutOfBoundsException("The property \"{$key}\" does not exist in Token.");
     }
 
     public function __isset($key)
