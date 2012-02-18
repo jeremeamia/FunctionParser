@@ -9,6 +9,9 @@ In the case of a Closure, it will also get the names and values of any closed up
 variables in the "use" statement). It relies on PHP lexical scanner, so the PHP tokenizer must be
 enabled in order to use the library.
 
+    use FunctionParser\FunctionParser,
+        ReflectionFunction;
+
     $parser = new FunctionParser(new ReflectionFunction());
     $code   = $parser->getCode();
 
