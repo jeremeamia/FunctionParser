@@ -20,3 +20,4 @@ enabled in order to use the library.
 - Unit tests
 - Doc blocks
 - General documentation
+- Checkstyle
