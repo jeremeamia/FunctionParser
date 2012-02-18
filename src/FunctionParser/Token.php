@@ -123,12 +123,12 @@ class Token implements \Serializable
 
     public function serialize()
     {
-        return serialize(array($this->name, $this->code, $this->line));
+        return serialize(array($this->name, $this->value, $this->code, $this->line));
     }
 
     public function unserialize($serialized)
     {
-        list($this->name, $this->code, $this->line) = unserialize($serialized);
+        list($this->name, $this->value, $this->code, $this->line) = unserialize($serialized);
     }
 
     public function __toString()
