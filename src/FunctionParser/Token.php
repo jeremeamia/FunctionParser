@@ -20,6 +20,7 @@ namespace FunctionParser;
 class Token implements \Serializable
 {
     protected $name;
+    protected $value;
     protected $code;
     protected $line;
 
@@ -27,15 +28,17 @@ class Token implements \Serializable
     {
         if (is_string($token))
         {
-            $this->name = NULL;
-            $this->code = $token;
-            $this->line = NULL;
+            $this->name  = NULL;
+            $this->value = NULL;
+            $this->code  = $token;
+            $this->line  = NULL;
         }
         elseif (is_array($token) && in_array(count($token), array(2, 3)))
         {
-            $this->name = token_name($token[0]);
-            $this->code = $token[1];
-            $this->line = isset($token[2]) ? $token[2] : NULL;
+            $this->name  = token_name($token[0]);
+            $this->value = $token[0];
+            $this->code  = $token[1];
+            $this->line  = isset($token[2]) ? $token[2] : NULL;
         }
         else
         {
@@ -48,6 +51,11 @@ class Token implements \Serializable
         return $this->name;
     }
 
+    public function getValue()
+    {
+        return $this->value;
+    }
+
     public function getCode()
     {
         return $this->code;
@@ -56,11 +64,6 @@ class Token implements \Serializable
     public function getLine()
     {
         return $this->line;
-    }
-
-    public function getInteger()
-    {
-        return defined($this->name) ? constant($this->name) : 0;
     }
 
     public function isOpeningBrace()
@@ -90,7 +93,7 @@ class Token implements \Serializable
 
     public function is($value)
     {
-        return ($this->code === $value || $this->getInteger() === $value);
+        return ($this->code === $value || $this->value === $value);
     }
 
     public function __get($key)

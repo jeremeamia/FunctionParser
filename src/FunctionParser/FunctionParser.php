@@ -18,7 +18,7 @@ namespace FunctionParser;
  */
 class FunctionParser
 {
-    const NAME_REGEX = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
+    const CALLABLE_REGEX = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\:\:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/D';
 
     protected $reflection;
     protected $parameters;
@@ -29,13 +29,11 @@ class FunctionParser
 
     public static function fromCallable($callable)
     {
-        $callable_regex = '/^'.self::NAME_REGEX.'\:\:'.self::NAME_REGEX.'$/D';
-
         if ( ! is_callable($callable))
         {
             throw new \InvalidArgumentException('You must provide a vaild PHP callable.');
         }
-        elseif (is_string($callable) && preg_match($callable_regex, $callable))
+        elseif (is_string($callable) && preg_match(static::CALLABLE_REGEX, $callable))
         {
             $callable = explode('::', $callable);
         }
@@ -162,7 +160,7 @@ class FunctionParser
              */
             if ($parsing_complete)
             {
-                if (is_array($token) AND $token->name === 'T_FUNCTION')
+                if (is_array($token) AND $token->is(T_FUNCTION))
                 {
                     throw new \RuntimeException('Cannot parse the function; '
                       . 'multiple, non-nested functions were defined in the code '
@@ -226,25 +224,25 @@ class FunctionParser
 
     protected function _parseContext()
     {
-        // Parse the variable names from the "use" contruct by scanning tokens
+        $context        = array();
         $variable_names = array();
-        $inside_use_construct = FALSE;
+        $inside_use     = FALSE;
+
+        // Parse the variable names from the "use" contruct by scanning tokens
+        /** @var $token \FunctionParser\Token */
         foreach ($this->tokenizer as $token)
         {
-            if (is_array($token))
+            if ( ! $inside_use AND $token->is(T_USE))
             {
-                if ($token->name === 'T_USE')
-                {
-                    // Once we find the "use" construct, set the flag
-                    $inside_use_construct = TRUE;
-                }
-                elseif ($inside_use_construct AND $token->name == 'T_VARIABLE')
-                {
-                    // For variables found in the "use" construct, get the name
-                    $variable_names[] = trim($token->code, '$ ');
-                }
+                // Once we find the "use" construct, set the flag
+                $inside_use = TRUE;
             }
-            elseif ($inside_use_construct AND $token->code === ')')
+            elseif ($inside_use AND $token->is(T_VARIABLE))
+            {
+                // For variables found in the "use" construct, get the name
+                $variable_names[] = trim($token->getCode(), '$ ');
+            }
+            elseif ($inside_use AND $token->isClosingParenthesis())
             {
                 // Once we encounter a closing parenthesis at the end of the
                 // "use" construct, then we are finished parsing.
@@ -256,7 +254,6 @@ class FunctionParser
         $variable_values = $this->reflection->getStaticVariables();
 
         // Construct the context by combining the variable names and values
-        $context = array();
         foreach ($variable_names as $variable_name)
         {
             if (isset($variable_values[$variable_name]))
