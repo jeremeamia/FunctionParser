@@ -1,15 +1,13 @@
 {
     "name": "FunctionParser/FunctionParser",
     "type": "library",
-    "description": "PHP Code Function Parser",
+    "description": "Function parser for PHP functions, methods, and closures",
     "keywords": ["function", "closure", "parser", "tokenizer"],
-    "homepage": "https://github.com/jeremeamia/PHPFunctionParser",
-    "version": "0.1",
+    "homepage": "https://github.com/jeremeamia/php-function-parser",
     "license": "MIT",
     "authors": [
         {
-            "name": "Jeremy Lindblom",
-            "email": "jeremy[at][comingsoon][dot]com"
+            "name": "Jeremy Lindblom"
         }
     ],
     "require": {
