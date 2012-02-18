@@ -48,9 +48,9 @@ class FunctionParser
 
     public function __construct(\ReflectionFunctionAbstract $reflection)
     {
-        if ($reflection->isInternal())
+        if (!$reflection->isUserDefined())
         {
-            throw new \InvalidArgumentException('You cannot parse the code of an internal PHP function.');
+            throw new \InvalidArgumentException('You can only parse the code of user-defined functions.');
         }
 
         $this->reflection = $reflection;
@@ -94,6 +94,16 @@ class FunctionParser
     public function getContext()
     {
         return $this->context;
+    }
+
+    public function getClass()
+    {
+        if (method_exists($this->reflection, 'getDeclaringClass'))
+        {
+            return $this->reflection->getDeclaringClass();
+        }
+
+        return null;
     }
 
     public function _fetchParameters()
@@ -216,41 +226,45 @@ class FunctionParser
 
     protected function _parseContext()
     {
-        $context        = array();
-        $variable_names = array();
-        $inside_use     = false;
+        $context = array();
 
-        // Parse the variable names from the "use" contruct by scanning tokens
-        /** @var $token \FunctionParser\Token */
-        foreach ($this->tokenizer as $token)
+        if ($this->reflection->isClosure())
         {
-            if (!$inside_use && $token->is(T_USE))
-            {
-                // Once we find the "use" construct, set the flag
-                $inside_use = true;
-            }
-            elseif ($inside_use && $token->is(T_VARIABLE))
-            {
-                // For variables found in the "use" construct, get the name
-                $variable_names[] = trim($token->getCode(), '$ ');
-            }
-            elseif ($inside_use && $token->isClosingParenthesis())
-            {
-                // Once we encounter a closing parenthesis at the end of the
-                // "use" construct, then we are finished parsing.
-                break;
-            }
-        }
+            $variable_names = array();
+            $inside_use     = false;
 
-        // Get the values of the variables that are closed upon in "use"
-        $variable_values = $this->reflection->getStaticVariables();
-
-        // Construct the context by combining the variable names and values
-        foreach ($variable_names as $variable_name)
-        {
-            if (isset($variable_values[$variable_name]))
+            // Parse the variable names from the "use" contruct by scanning tokens
+            /** @var $token \FunctionParser\Token */
+            foreach ($this->tokenizer as $token)
             {
-                $context[$variable_name] = $variable_values[$variable_name];
+                if (!$inside_use && $token->is(T_USE))
+                {
+                    // Once we find the "use" construct, set the flag
+                    $inside_use = true;
+                }
+                elseif ($inside_use && $token->is(T_VARIABLE))
+                {
+                    // For variables found in the "use" construct, get the name
+                    $variable_names[] = trim($token->getCode(), '$ ');
+                }
+                elseif ($inside_use && $token->isClosingParenthesis())
+                {
+                    // Once we encounter a closing parenthesis at the end of the
+                    // "use" construct, then we are finished parsing.
+                    break;
+                }
+            }
+
+            // Get the values of the variables that are closed upon in "use"
+            $variable_values = $this->reflection->getStaticVariables();
+
+            // Construct the context by combining the variable names and values
+            foreach ($variable_names as $variable_name)
+            {
+                if (isset($variable_values[$variable_name]))
+                {
+                    $context[$variable_name] = $variable_values[$variable_name];
+                }
             }
         }
 
