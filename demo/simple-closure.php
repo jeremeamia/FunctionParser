@@ -13,7 +13,9 @@ $closure = function($bar) use($foo) {
 
 $parser = new FunctionParser(new \ReflectionFunction($closure));
 
-echo "CODE:" . PHP_EOL . $parser->getCode() . PHP_EOL . PHP_EOL;
+echo "CODE:" . PHP_EOL;
+echo $parser->getCode() . PHP_EOL;
+echo PHP_EOL;
 
 echo 'PARAMETERS:' . PHP_EOL;
 var_dump($parser->getParameters());
@@ -21,3 +23,4 @@ echo PHP_EOL;
 
 echo 'CLOSURES:' . PHP_EOL;
 var_dump($parser->getContext());
+echo PHP_EOL;
