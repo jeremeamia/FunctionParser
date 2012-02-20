@@ -57,7 +57,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
     }
 
     /**
-     * @return Token
+     * @return \FunctionParser\Token
      */
     public function getNextToken()
     {
@@ -113,6 +113,24 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         return $this->__toString();
     }
 
+    public function prependTokens(Tokenizer $new_tokens)
+    {
+        $this->tokens = array_merge($new_tokens->toArray(), $this->tokens);
+        $this->rewind();
+        $this->recount();
+
+        return $this;
+    }
+
+    public function appendTokens(Tokenizer $new_tokens)
+    {
+        $this->tokens = array_merge($this->tokens, $new_tokens->toArray());
+        $this->rewind();
+        $this->recount();
+
+        return $this;
+    }
+
     public function current()
     {
         return $this->tokens[$this->index];
@@ -161,6 +179,11 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
 
     public function offsetSet($offset, $value)
     {
+        if (!$this->offsetExists($offset))
+        {
+            $offset = $this->count++;
+        }
+
         $this->tokens[$offset] = $value;
     }
 
@@ -184,6 +207,11 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         return $this->count;
     }
 
+    public function recount()
+    {
+        return $this->count = count($this->tokens);
+    }
+
     public function serialize()
     {
         return serialize(array(
@@ -197,6 +225,11 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         $unserialized = unserialize($serialized);
         $this->__construct($unserialized['tokens']);
         $this->seek($unserialized['index']);
+    }
+
+    public function toArray()
+    {
+        return $this->tokens;
     }
 
     public function __toString()
