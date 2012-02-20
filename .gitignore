@@ -2,3 +2,4 @@
 vendor/*
 build/*
 .DS_Store
+cache.properties
