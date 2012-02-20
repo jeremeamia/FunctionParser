@@ -16,7 +16,7 @@ available.
         return $foo + $bar;
     };
 
-    $parser = new FunctionParser(new \ReflectionFunction($foo));
+    $parser = new FunctionParser(new \ReflectionFunction($closure));
     $code   = $parser->getCode();
 
 ## TODO
