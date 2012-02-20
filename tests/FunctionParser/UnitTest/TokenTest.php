@@ -7,13 +7,40 @@ use FunctionParser\Token;
 class TokenTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @covers FunctionParser\Token::__construct
+     */
+    public function testConstructorAcceptsArrayOrString()
+    {
+        $token = new Token(array(T_FUNCTION, 'function', 2));
+        $this->assertInstanceOf('FunctionParser\Token', $token);
+
+        $token = new Token('{');
+        $this->assertInstanceOf('FunctionParser\Token', $token);
+    }
+
+    /**
+     * @covers FunctionParser\Token::__construct
+     * @expectedException \InvalidArgumentException
+     */
+    public function testConstructorThrowsExceptionOnBadArguments()
+    {
+        $token = new Token(array(100));
+    }
+
+    /**
      * @covers FunctionParser\Token::getName
      */
-    public function testGetName()
+    public function testGettingTheNameReturnsAStringForNormalTokens()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
         $this->assertEquals($token->getName(), 'T_FUNCTION');
+    }
 
+    /**
+     * @covers FunctionParser\Token::getName
+     */
+    public function testGettingTheNameReturnsNullForLiteralTokens()
+    {
         $token = new Token('{');
         $this->assertEquals($token->getName(), null);
     }
@@ -21,7 +48,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::getCode
      */
-    public function testGetCode()
+    public function testGettingTheCodeReturnsStringOfCodeForAnyTokens()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
         $this->assertEquals($token->getCode(), 'function');
@@ -33,31 +60,43 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::getLine
      */
-    public function testGetLine()
+    public function testGettingTheLineReturnsAnIntegerForLiteralTokens()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
         $this->assertEquals($token->getLine(), 2);
-
-        $token = new Token('{');
-        $this->assertEquals($token->getLine(), null);
     }
 
     /**
-     * @covers FunctionParser\Token::getValue
+     * @covers FunctionParser\Token::getLine
      */
-    public function testGetValue()
+    public function testGettingTheLineReturnsNullForLiteralTokens()
     {
-        $token = new Token(array(T_FUNCTION, 'function', 2));
-        $this->assertEquals($token->getValue(), T_FUNCTION);
-
         $token = new Token('{');
         $this->assertEquals($token->getValue(), null);
     }
 
     /**
+     * @covers FunctionParser\Token::getValue
+     */
+    public function testGettingTheValueReturnsAnIntegerForLiteralTokens()
+    {
+        $token = new Token(array(T_FUNCTION, 'function', 2));
+        $this->assertEquals($token->getValue(), T_FUNCTION);
+    }
+
+    /**
+     * @covers FunctionParser\Token::getValue
+     */
+    public function testGettingTheValueLineReturnsNullForLiteralTokens()
+    {
+        $token = new Token('{');
+        $this->assertEquals($token->getLine(), null);
+    }
+
+    /**
      * @covers FunctionParser\Token::isOpeningBrace
      */
-    public function testIsOpeningBrace()
+    public function testOpeningBracesAreIdentifiedCorrectly()
     {
         $token = new Token('}');
         $this->assertFalse($token->isOpeningBrace());
@@ -69,7 +108,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::isClosingBrace
      */
-    public function testIsClosingBrace()
+    public function testClosingBracesAreIdentifiedCorrectly()
     {
         $token = new Token('{');
         $this->assertFalse($token->isClosingBrace());
@@ -81,7 +120,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::isOpeningParenthesis
      */
-    public function testIsOpeningParenthesis()
+    public function testOpeningParenthesesAreIdentifiedCorrectly()
     {
         $token = new Token(')');
         $this->assertFalse($token->isOpeningParenthesis());
@@ -93,7 +132,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::isClosingParenthesis
      */
-    public function testIsClosingParenthesis()
+    public function testClosingParenthesesAreIdentifiedCorrectly()
     {
         $token = new Token('(');
         $this->assertFalse($token->isClosingParenthesis());
@@ -105,7 +144,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::isLiteralToken
      */
-    public function testIsLiteralToken()
+    public function testLiteralTokensAreIdentifiedCorrectly()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
         $this->assertFalse($token->isLiteralToken());
@@ -117,7 +156,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::is
      */
-    public function testIs()
+    public function testTokensAreIdentifiedCorrectlyByCodeOrValue()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
 
@@ -129,21 +168,56 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::serialize
+     * @covers FunctionParser\Token::unserialize
      */
-    public function testSerialize()
+    public function testSerializingAndUnserializingDoesNotAlterToken()
     {
-        $token = new Token(array(T_FUNCTION, 'function', 2));
-        $serial = 'C:20:"FunctionParser\Token":65:{a:4:{i:0;s:10:"T_FUNCTION";i:1;i:334;i:2;s:8:"function";i:3;i:2;}}';
-        $this->assertEquals(serialize($token), $serial);
+        $token        = new Token(array(T_FUNCTION, 'function', 2));
+        $serialized   = serialize($token);
+        $unserialized = unserialize($serialized);
+        $this->assertEquals($token, $unserialized);
     }
 
     /**
-     * @covers FunctionParser\Token::unserialize
+     * @covers FunctionParser\Token::__isset
+     * @covers FunctionParser\Token::__get
+     * @covers FunctionParser\Token::__set
      */
-    public function testUnserialize()
+    public function testGettersAndSettersWorkCorrectly()
     {
         $token = new Token(array(T_FUNCTION, 'function', 2));
-        $serial = 'C:20:"FunctionParser\Token":65:{a:4:{i:0;s:10:"T_FUNCTION";i:1;i:334;i:2;s:8:"function";i:3;i:2;}}';
-        $this->assertEquals(unserialize($serial), $token);
+        $this->assertTrue(isset($token->name));
+        $this->assertEquals($token->getName(), $token->name);
+        $token->name = 'foo';
+        $this->assertEquals($token->getName(), 'foo');
+    }
+
+    /**
+     * @covers FunctionParser\Token::__get
+     * @expectedException \OutOfBoundsException
+     */
+    public function testGetterThrowsExceptionOnBadKey()
+    {
+        $token = new Token('{');
+        $foo = $token->foo;
+    }
+
+    /**
+     * @covers FunctionParser\Token::__set
+     * @expectedException \OutOfBoundsException
+     */
+    public function testSetterThrowsExceptionOnBadKey()
+    {
+        $token = new Token('{');
+        $token->foo = 'foo';
+    }
+
+    /**
+     * @covers FunctionParser\Token::__toString
+     */
+    public function testConvertingToStringReturnsTheTokenCode()
+    {
+        $token = new Token(array(T_FUNCTION, 'function', 2));
+        $this->assertEquals((string) $token, $token->getCode());
     }
 }
