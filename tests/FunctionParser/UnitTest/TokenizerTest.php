@@ -7,39 +7,177 @@ use FunctionParser\Tokenizer;
 class TokenizerTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers FunctionParser\Tokenizer::getNextToken
-     * @todo   Implement testGetNextToken().
+     * @var FunctionParser\Tokenizer The tokenizer.
      */
-    public function testGetNextToken()
+    public $tokenizer;
+
+    public function setUp()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $this->tokenizer = new Tokenizer('function fooize(array $bar) {return \'foo(\'.join(\',\', $bar).\')\';}');
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::__construct
+     * @group unit
+     */
+    public function testConstructorAcceptsCodeAsString()
+    {
+        $tokenizer = new Tokenizer('echo $foo;');
+        $this->assertInstanceOf('FunctionParser\Tokenizer', $tokenizer);
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::__construct
+     * @group unit
+     */
+    public function testConstructorAcceptsArrayOfTokens()
+    {
+        $token  = $this->getMock('FunctionParser\Token', array(), array(), '', false);
+        $tokens = array($token, clone $token, clone $token);
+
+        $tokenizer = new Tokenizer($tokens);
+        $this->assertInstanceOf('FunctionParser\Tokenizer', $tokenizer);
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::__construct
+     * @group unit
+     * @expectedException \InvalidArgumentException
+     */
+    public function testConstructorThrowsExceptionOnInvalidArgument()
+    {
+        $tokenizer = new Tokenizer(5);
+    }
+
+    /**
+     * Data provider for testCanGetNextToken
+     */
+    public function dataCanGetNextToken()
+    {
+        return array(
+            array( 5,  '$bar', 6  ),
+            array( 0,  ' ',    1  ),
+            array( 23,  '}',   24 ),
+            array( 24, null,   25 ),
+        );
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::getNextToken
+     * @group unit
+     * @dataProvider dataCanGetNextToken
+     */
+    public function testCanGetNextToken($seek_value, $next_token_value, $next_token_index)
+    {
+        $this->tokenizer->seek($seek_value);
+        $token = $this->tokenizer->getNextToken();
+
+        $this->assertEquals($next_token_value, $token ? $token->getCode() : $token);
+        $this->assertEquals($next_token_index, $this->tokenizer->key());
+    }
+
+    /**
+     * Data provider for testCanGetPreviousToken
+     */
+    public function dataCanGetPreviousToken()
+    {
+        return array(
+            array( 5,  'array',    4  ),
+            array( 0,  null,       -1 ),
+            array( 1,  'function', 0  ),
+            array( 24, ';',        23 ),
+        );
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::getPreviousToken
+     * @group unit
+     * @dataProvider dataCanGetPreviousToken
+     */
+    public function testCanGetPreviousToken($seek_value, $next_token_value, $next_token_index)
+    {
+        $this->tokenizer->seek($seek_value);
+        $token = $this->tokenizer->getPreviousToken();
+
+        $this->assertEquals($next_token_value, $token ? $token->getCode() : $token);
+        $this->assertEquals($next_token_index, $this->tokenizer->key());
+    }
+
+    /**
+     * Data provider for testHasMoreTokensWorksProperly
+     */
+    public function dataHasMoreTokensWorksProperly()
+    {
+        return array(
+            array( 10, true  ),
+            array( 0,  true  ),
+            array( 24, false ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::hasMoreTokens
-     * @todo   Implement testHasMoreTokens().
+     * @group unit
+     * @dataProvider dataHasMoreTokensWorksProperly
      */
-    public function testHasMoreTokens()
+    public function testHasMoreTokensWorksProperly($seek_value, $return_value)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $this->tokenizer->seek($seek_value);
+        $this->assertEquals($return_value, $this->tokenizer->hasMoreTokens());
+    }
+
+    /**
+     * Data provider for testFindTokenWorksProperly
+     */
+    public function dataFindTokenWorksProperly()
+    {
+        return array(
+            array( T_STRING,   0,  'fooize' ),
+            array( T_STRING,   5,  'join'   ),
+            array( T_STRING,   -1, 'join'   ),
+            array( 'T_STRING', 0,  'fooize' ),
+            array( 'T_STRING', 5,  'join'   ),
+            array( 'T_STRING', -1, 'join'   ),
+            array( 'fooize',   0,  'fooize' ),
+            array( 'join',     5,  'join'   ),
+            array( 'join',     -1, 'join'   ),
+            array( 'cheese',   0,  null     ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::findToken
-     * @todo   Implement testFindToken().
+     * @group unit
+     * @dataProvider dataFindTokenWorksProperly
      */
-    public function testFindToken()
+    public function testFindTokenWorksProperly($search, $offset, $result)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $token = $this->tokenizer->findToken($search, $offset);
+        $this->assertEquals($result, $token ? $token->getCode() : null);
+    }
+
+    /**
+     * Data provider for testFindTokenThrowsExceptionOnBadArgs
+     */
+    public function dataFindTokenThrowsExceptionOnBadArgs()
+    {
+        return array(
+            array( null, 0    ),
+            array( '{',  null ),
+            array( null, null ),
+            array( '{',  '{'  ),
         );
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::findToken
+     * @group unit
+     * @dataProvider dataFindTokenThrowsExceptionOnBadArgs
+     * @expectedException \InvalidArgumentException
+     */
+    public function testFindTokenThrowsExceptionOnBadArgs($search, $offset)
+    {
+        $token = $this->tokenizer->findToken($search, $offset);
     }
 
     /**
@@ -67,99 +205,88 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers FunctionParser\Tokenizer::getString
-     * @todo   Implement testGetString().
-     */
-    public function testGetString()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
      * @covers FunctionParser\Tokenizer::current
-     * @todo   Implement testCurrent().
+     * @group unit
      */
-    public function testCurrent()
+    public function testCurrentFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals('function', $this->tokenizer->current());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::next
-     * @todo   Implement testNext().
+     * @group unit
      */
-    public function testNext()
+    public function testNextFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->seek(10);
+        $this->tokenizer->next();
+        $this->assertEquals(11, $this->tokenizer->key());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::prev
-     * @todo   Implement testPrev().
+     * @group unit
      */
-    public function testPrev()
+    public function testPrevFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->seek(10);
+        $this->tokenizer->prev();
+        $this->assertEquals(9, $this->tokenizer->key());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::key
-     * @todo   Implement testKey().
+     * @group unit
      */
-    public function testKey()
+    public function testKeyFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $this->assertEquals(0, $this->tokenizer->key());
+    }
+
+    /**
+     * Data provider for testValidFeatureOfIteratorWorks
+     */
+    public function dataValidFeatureOfIteratorWorks()
+    {
+        return array(
+            array( -1 ),
+            array( 0  ),
+            array( 15 ),
+            array( 24 ),
+            array( 25 ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::valid
-     * @todo   Implement testValid().
+     * @dataProvider dataValidFeatureOfIteratorWorks
+     * @group unit
      */
-    public function testValid()
+    public function testValidFeatureOfIteratorWorks($seek_to)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->seek($seek_to);
+        $this->assertTrue($this->tokenizer->valid());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::rewind
-     * @todo   Implement testRewind().
+     * @group unit
      */
-    public function testRewind()
+    public function testRewindFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->rewind();
+        $this->assertEquals(0, $this->tokenizer->key());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::seek
-     * @todo   Implement testSeek().
+     * @group unit
      */
-    public function testSeek()
+    public function testSeekFeatureOfIteratorWorks()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->seek(5);
+        $this->assertEquals(5, $this->tokenizer->key());
     }
 
     /**
@@ -247,10 +374,10 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers FunctionParser\Tokenizer::__toString
-     * @todo   Implement test__toString().
+     * @covers FunctionParser\Tokenizer::getString
+     * @todo   Implement testGetString().
      */
-    public function test__toString()
+    public function testGetString()
     {
         // Remove the following lines when you implement this test.
         $this->markTestIncomplete(

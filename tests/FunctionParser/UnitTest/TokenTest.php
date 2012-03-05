@@ -8,6 +8,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @covers FunctionParser\Token::__construct
+     * @group unit
      */
     public function testConstructorAcceptsArrayOrString()
     {
@@ -20,6 +21,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::__construct
+     * @group unit
      * @expectedException \InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnBadArguments()
@@ -29,6 +31,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getName
+     * @group unit
      */
     public function testGettingTheNameReturnsAStringForNormalTokens()
     {
@@ -38,6 +41,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getName
+     * @group unit
      */
     public function testGettingTheNameReturnsNullForLiteralTokens()
     {
@@ -47,6 +51,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getCode
+     * @group unit
      */
     public function testGettingTheCodeReturnsStringOfCodeForAnyTokens()
     {
@@ -59,6 +64,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getLine
+     * @group unit
      */
     public function testGettingTheLineReturnsAnIntegerForLiteralTokens()
     {
@@ -68,6 +74,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getLine
+     * @group unit
      */
     public function testGettingTheLineReturnsNullForLiteralTokens()
     {
@@ -77,6 +84,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getValue
+     * @group unit
      */
     public function testGettingTheValueReturnsAnIntegerForLiteralTokens()
     {
@@ -86,6 +94,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::getValue
+     * @group unit
      */
     public function testGettingTheValueLineReturnsNullForLiteralTokens()
     {
@@ -95,6 +104,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::isOpeningBrace
+     * @group unit
      */
     public function testOpeningBracesAreIdentifiedCorrectly()
     {
@@ -107,6 +117,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::isClosingBrace
+     * @group unit
      */
     public function testClosingBracesAreIdentifiedCorrectly()
     {
@@ -119,6 +130,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::isOpeningParenthesis
+     * @group unit
      */
     public function testOpeningParenthesesAreIdentifiedCorrectly()
     {
@@ -131,6 +143,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::isClosingParenthesis
+     * @group unit
      */
     public function testClosingParenthesesAreIdentifiedCorrectly()
     {
@@ -143,6 +156,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::isLiteralToken
+     * @group unit
      */
     public function testLiteralTokensAreIdentifiedCorrectly()
     {
@@ -155,6 +169,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Token::is
+     * @group unit
      */
     public function testTokensAreIdentifiedCorrectlyByCodeOrValue()
     {
@@ -169,6 +184,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Token::serialize
      * @covers FunctionParser\Token::unserialize
+     * @group unit
      */
     public function testSerializingAndUnserializingDoesNotAlterToken()
     {
@@ -182,6 +198,7 @@ class TokenTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\Token::__isset
      * @covers FunctionParser\Token::__get
      * @covers FunctionParser\Token::__set
+     * @group unit
      */
     public function testGettersAndSettersWorkCorrectly()
     {
