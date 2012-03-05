@@ -9,21 +9,35 @@ namespace FunctionParser;
  * into Token objects and allows iteration and seeking through the collection of tokens.
  *
  * @package FunctionParser
- * @author  Jeremy Lindblom
+ * @author Jeremy Lindblom
  * @license MIT
  */
 class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Serializable
 {
+    /**
+     * @var array The array of tokens.
+     */
     protected $tokens;
-    protected $count;
+
+    /**
+     * @var integer The current index of the iterator through the tokens.
+     */
     protected $index;
 
+    /**
+     * Constructs a Tokenizer object.
+     *
+     * @param string|array $code The code to tokenize, or an array of Token objects.
+     * @throws \InvalidArgumentException
+     */
     public function __construct($code)
     {
+        // @codeCoverageIgnoreStart
         if (!function_exists('token_get_all'))
         {
             throw new \RuntimeException('The PHP tokenizer must be enabled to use this class.');
         }
+        // @codeCoverageIgnoreEnd
 
         if (is_string($code))
         {
@@ -52,55 +66,111 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
             throw new \InvalidArgumentException('The tokenizer either expects a string of code or an array of Tokens.');
         }
 
-        $this->count = count($this->tokens);
         $this->index = 0;
     }
 
     /**
-     * @return \FunctionParser\Token
+     * Move to the next token and return it. Returns null if there are no more tokens.
+     *
+     * @return \FunctionParser\Token The next token in the tokenizer.
      */
     public function getNextToken()
     {
-        return $this->next();
+        $this->next();
+
+        return $this->valid() ? $this->current() : null;
     }
 
+    /**
+     * Move to the previous token and return it. Returns null if there are no more tokens.
+     *
+     * @return \FunctionParser\Token The previous token in the tokenizer.
+     */
+    public function getPreviousToken()
+    {
+        $this->prev();
+
+        return $this->valid() ? $this->current() : null;
+    }
+
+    /**
+     * Determines whether or not there are more tokens left.
+     *
+     * @return boolean True if there are more tokens left in the tokenizer.
+     */
     public function hasMoreTokens()
     {
-        return ($this->index < $this->count - 1);
+        return ($this->index < $this->count() - 1);
     }
 
+    /**
+     * Find a token in the tokenizer. You can search by the token's literal code or name. You can also specify on
+     * offset for the search. If the offset is negative, the search will be done starting from the end.
+     *
+     * @param string|integer $search The token's literal code or name.
+     * @param integer $offset The offset to start searching from. A negative offest searches from the end.
+     * @return \FunctionParser\Token The token that has been found or null.
+     */
     public function findToken($search, $offset = 0)
     {
-        $offset = (integer) $offset;
+        if ($search === null)
+        {
+            throw new \InvalidArgumentException('A token cannot be searched for with a null value.');
+        }
+        elseif (!is_int($offset))
+        {
+            throw new \InvalidArgumentException('On offset must be specified as an integer.');
+        }
 
         if ($offset >= 0)
         {
-            $tokenizer = $this;
+            // Offset is greater than zero. Search from left to right
+            $tokenizer = clone $this;
         }
         else
         {
+            // Offset is negative. Search from right to left
             $tokenizer = new Tokenizer(array_reverse($this->tokens));
-            $offset = abs($offset) - 1;
+            $offset    = abs($offset) - 1;
         }
 
-        $this->seek($offset);
+        // Seek to the offset and start the search from there
+        $tokenizer->seek($offset);
 
-        foreach ($tokenizer as $token)
+        // Loop through the tokens and search for the target token
+        while ($tokenizer->valid())
         {
-            if ($token->code === $search || ($search !== null && $token->name === $search))
+            $token = $tokenizer->current();
+
+            if ($token->code === $search || $token->name === $search || $token->value === $search)
             {
                 return $token;
             }
+
+            $tokenizer->next();
         }
 
-        return false;
+        return null;
     }
 
+    /**
+     * Determines whether or not a token is in the tokenizer. Searches by literal token code or name
+     *
+     * @param string|integer $search The token's literal code or name.
+     * @return boolean Whether or not the token is in the tokenizer
+     */
     public function hasToken($search)
     {
         return (boolean) $this->findToken($search);
     }
 
+    /**
+     * Returns a new tokenizer that consists of a subset of the tokens specified by the provided range.
+     *
+     * @param integer $start The starting offset of the range
+     * @param integer $finish The ending offset of the range
+     * @return \FunctionParser\Tokenizer A tokenizer with a subset of tokens
+     */
     public function getTokenRange($start, $finish)
     {
         $tokens = array_slice($this->tokens, (integer) $start, (integer) $finish - (integer) $start);
@@ -108,110 +178,200 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         return new Tokenizer($tokens);
     }
 
-    public function getString()
-    {
-        return $this->__toString();
-    }
-
+    /**
+     * Prepends a tokenizer to the beginning of this tokenizer.
+     *
+     * @param \FunctionParser\Tokenizer $new_tokens The tokenizer to prepend.
+     * @return \FunctionParser\Tokenizer
+     */
     public function prependTokens(Tokenizer $new_tokens)
     {
         $this->tokens = array_merge($new_tokens->toArray(), $this->tokens);
         $this->rewind();
-        $this->recount();
 
         return $this;
     }
 
+    /**
+     * Appends a tokenizer to the beginning of this tokenizer.
+     *
+     * @param \FunctionParser\Tokenizer $new_tokens The tokenizer to append.
+     * @return \FunctionParser\Tokenizer
+     */
     public function appendTokens(Tokenizer $new_tokens)
     {
         $this->tokens = array_merge($this->tokens, $new_tokens->toArray());
         $this->rewind();
-        $this->recount();
 
         return $this;
     }
 
+    /**
+     * Get the first token.
+     *
+     * @return \FunctionParser\Token The first token.
+     */
+    public function getFirst()
+    {
+        $this->index = 0;
+
+        return $this->current();
+    }
+
+    /**
+     * Get the last token
+     *
+     * @return \FunctionParser\Token The last token.
+     */
+    public function getLast()
+    {
+        $this->index = $this->count() - 1;
+
+        return $this->current();
+    }
+
+    /**
+     * Returns the current token.
+     *
+     * @return \FunctionParser\Token The current token.
+     */
     public function current()
     {
         return $this->tokens[$this->index];
     }
 
+    /**
+     * Move to the next token.
+     */
     public function next()
     {
         $this->index++;
     }
 
+    /**
+     * Move to the previous token.
+     */
     public function prev()
     {
         $this->index--;
     }
 
+    /**
+     * Return the current token's index.
+     *
+     * @return integer The token's index.
+     */
     public function key()
     {
         return $this->index;
     }
 
+    /**
+     * Determines whether or not the tokenizer's index points to a token.
+     *
+     * @return boolean True if the current token exists.
+     */
     public function valid()
     {
-        return isset($this->tokens[$this->index]);
+        return array_key_exists($this->index, $this->tokens);
     }
 
+    /**
+     * Move to the first token.
+     */
     public function rewind()
     {
         $this->index = 0;
     }
 
+    /**
+     * Move to the specified token.
+     *
+     * @param integer $index The index to seek to.
+     */
     public function seek($index)
     {
-        $index = min(0, max($this->count - 1, $index));
-        $this->index = $index;
+        $this->index = max(0, min($this->count() - 1, (integer) $index));
     }
 
+    /**
+     * Determines wheter or not the specified offset exists.
+     *
+     * @param integer $offset The offset to check.
+     * @return boolean Whether or not the offset exists.
+     */
     public function offsetExists($offset)
     {
         return isset($this->tokens[$offset]);
     }
 
+    /**
+     * Gets the token at the specified offset.
+     *
+     * @param integer $offset The offset to get.
+     * @return \FunctionParser\Token The token at the offset.
+     */
     public function offsetGet($offset)
     {
         return $this->tokens[$offset];
     }
 
+    /**
+     * Sets the token at the specified offset.
+     *
+     * @param integer $offset The offset to set.
+     * @param \FunctionParser\Token The token to set.
+     * @throws \InvalidArgumentException
+     */
     public function offsetSet($offset, $value)
     {
-        if (!$this->offsetExists($offset))
+        if (!is_integer($offset))
         {
-            $offset = $this->count++;
+            throw new \InvalidArgumentException('The offset must be an integer.');
+        }
+
+        if (!$value instanceof Token)
+        {
+            throw new \InvalidArgumentException('The value provided must be a token.');
         }
 
         $this->tokens[$offset] = $value;
     }
 
+    /**
+     * Unsets the token at the specified offset.
+     *
+     * @param integer $offset The offset to unset.
+     */
     public function offsetUnset($offset)
     {
         if (isset($this->tokens[$offset]))
         {
             unset($this->tokens[$offset]);
 
-            $this->count--;
-
-            if ($this->index >= $this->count)
+            // Make sure the index does not fall outside of the tokenizer
+            if ($this->index >= $this->count())
             {
                 $this->index--;
             }
         }
     }
 
+    /**
+     * Get the number of tokens in the tokenizer.
+     *
+     * @return integer The number of tokens.
+     */
     public function count()
     {
-        return $this->count;
+        return count($this->tokens);
     }
 
-    public function recount()
-    {
-        return $this->count = count($this->tokens);
-    }
-
+    /**
+     * Serializes the tokenizer.
+     *
+     * @return string The serialized tokenizer.
+     */
     public function serialize()
     {
         return serialize(array(
@@ -220,6 +380,11 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         ));
     }
 
+    /**
+     * Unserialize the tokenizer.
+     *
+     * @param string $serialized The serialized tokenizer.
+     */
     public function unserialize($serialized)
     {
         $unserialized = unserialize($serialized);
@@ -227,12 +392,22 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         $this->seek($unserialized['index']);
     }
 
+    /**
+     * Gets the tokens as an array from the tokenizer.
+     *
+     * @return array The array of tokens.
+     */
     public function toArray()
     {
         return $this->tokens;
     }
 
-    public function __toString()
+    /**
+     * Returns a tokenizer as a string of code.
+     *
+     * @return string The string of code.
+     */
+    public function toString()
     {
         $code = '';
 
@@ -242,5 +417,15 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         }
 
         return $code;
+    }
+
+    /**
+     * Returns a tokenizer as a string of code.
+     *
+     * @return string The string of code.
+     */
+    public function __toString()
+    {
+        return $this->toString();
     }
 }

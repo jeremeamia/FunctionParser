@@ -16,6 +16,7 @@ namespace FunctionParser;
  * @property string $name
  * @property string $code
  * @property integer $line
+ * @property integer $value
  */
 class Token implements \Serializable
 {
