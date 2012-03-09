@@ -32,10 +32,15 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructorAcceptsArrayOfTokens()
     {
-        $token  = $this->getMockBuilder('FunctionParser\Token')
+        $token_prototype = $this->getMockBuilder('FunctionParser\Token')
             ->disableOriginalConstructor(true)
             ->getMock();
-        $tokens = array($token, clone $token, clone $token);
+
+        $tokens = array(
+            clone $token_prototype,
+            clone $token_prototype,
+            clone $token_prototype,
+        );
 
         $tokenizer = new Tokenizer($tokens);
         $this->assertInstanceOf('FunctionParser\Tokenizer', $tokenizer);

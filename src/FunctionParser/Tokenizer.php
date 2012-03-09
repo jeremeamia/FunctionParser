@@ -349,6 +349,9 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         {
             unset($this->tokens[$offset]);
 
+            // Re-index the tokens
+            $this->tokens = array_values($this->tokens);
+
             // If the current index is now outside of the valid indeces, reset the index
             if (!$this->valid())
             {
