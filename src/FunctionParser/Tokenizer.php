@@ -291,7 +291,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function seek($index)
     {
-        $this->index = max(0, min($this->count() - 1, (integer) $index));
+        $this->index = (integer) $index;
     }
 
     /**
@@ -302,7 +302,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function offsetExists($offset)
     {
-        return isset($this->tokens[$offset]);
+        return is_integer($offset) && array_key_exists($offset, $this->tokens);
     }
 
     /**
@@ -325,9 +325,9 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function offsetSet($offset, $value)
     {
-        if (!is_integer($offset))
+        if (!(is_integer($offset) && $offset >= 0 && $offset <= $this->count()))
         {
-            throw new \InvalidArgumentException('The offset must be an integer.');
+            throw new \InvalidArgumentException('The offset must be a valid, positive integer.');
         }
 
         if (!$value instanceof Token)
@@ -345,14 +345,14 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function offsetUnset($offset)
     {
-        if (isset($this->tokens[$offset]))
+        if ($this->offsetExists($offset))
         {
             unset($this->tokens[$offset]);
 
-            // Make sure the index does not fall outside of the tokenizer
-            if ($this->index >= $this->count())
+            // If the current index is now outside of the valid indeces, reset the index
+            if (!$this->valid())
             {
-                $this->index--;
+                $this->rewind();
             }
         }
     }

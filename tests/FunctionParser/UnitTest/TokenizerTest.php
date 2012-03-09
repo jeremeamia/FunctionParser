@@ -32,7 +32,9 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructorAcceptsArrayOfTokens()
     {
-        $token  = $this->getMock('FunctionParser\Token', array(), array(), '', false);
+        $token  = $this->getMockBuilder('FunctionParser\Token')
+            ->disableOriginalConstructor(true)
+            ->getMock();
         $tokens = array($token, clone $token, clone $token);
 
         $tokenizer = new Tokenizer($tokens);
@@ -250,11 +252,11 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function dataValidFeatureOfIteratorWorks()
     {
         return array(
-            array( -1 ),
-            array( 0  ),
-            array( 15 ),
-            array( 24 ),
-            array( 25 ),
+            array( -1, false ),
+            array( 0,  true  ),
+            array( 14, true  ),
+            array( 24, true  ),
+            array( 25, false ),
         );
     }
 
@@ -263,10 +265,10 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      * @dataProvider dataValidFeatureOfIteratorWorks
      * @group unit
      */
-    public function testValidFeatureOfIteratorWorks($seek_to)
+    public function testValidFeatureOfIteratorWorks($seek, $result)
     {
-        $this->tokenizer->seek($seek_to);
-        $this->assertTrue($this->tokenizer->valid());
+        $this->tokenizer->seek($seek);
+        $this->assertEquals($result, $this->tokenizer->valid());
     }
 
     /**
@@ -291,62 +293,125 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetExists
-     * @todo   Implement testOffsetExists().
+     * @group unit
+     * @dataProvider dataValidFeatureOfIteratorWorks
      */
-    public function testOffsetExists()
+    public function testOffsetExistsWorksProperly($offset, $result)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $this->assertEquals($result, isset($this->tokenizer[$offset]));
+    }
+
+    /**
+     * Data provider for testOffsetGetWorksProperly
+     */
+    public function dataOffsetGetWorksProperly()
+    {
+        return array(
+            array( -1, null       ),
+            array( 0,  'function' ),
+            array( 14, 'join'     ),
+            array( 24, '}'        ),
+            array( 25, null       ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::offsetGet
-     * @todo   Implement testOffsetGet().
+     * @group unit
+     * @dataProvider dataOffsetGetWorksProperly
      */
-    public function testOffsetGet()
+    public function testOffsetGetWorksProperly($offset, $result)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $this->assertEquals($result, isset($this->tokenizer[$offset]) ? $this->tokenizer[$offset]->getCode() : null);
+    }
+
+    /**
+     * Data provider for testOffsetSetWorksProperly
+     */
+    public function dataOffsetSetWorksProperly()
+    {
+        return array(
+            array( 0,  'dummy' ),
+            array( 14, 'dummy' ),
+            array( 24, 'dummy' ),
+            array( 25, 'dummy' ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::offsetSet
-     * @todo   Implement testOffsetSet().
+     * @group unit
+     * @dataProvider dataOffsetSetWorksProperly
      */
-    public function testOffsetSet()
+    public function testOffsetSetWorksProperly($offset, $token_value)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
+        $token = $this->getMockBuilder('FunctionParser\Token')
+            ->setConstructorArgs(array($token_value))
+            ->getMock();
+
+        $this->tokenizer[$offset] = $token;
+        $this->assertSame($token, $this->tokenizer[$offset]);
+    }
+
+    /**
+     * Data provider for testOffsetSetThrowsExceptionOnInvalidArgs
+     */
+    public function dataOffsetSetThrowsExceptionOnInvalidArgs()
+    {
+        return array(
+            array( 'foo', 'dummy' ),
+            array( -1,    'dummy' ),
+            array( 26,    'dummy' ),
+            array( 12,    null    ),
+        );
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::offsetSet
+     * @group unit
+     * @dataProvider dataOffsetSetThrowsExceptionOnInvalidArgs
+     * @expectedException \InvalidArgumentException
+     */
+    public function testOffsetSetThrowsExceptionOnInvalidArgs($offset, $value)
+    {
+        $this->tokenizer[$offset] = $value ? $this->getMockBuilder('FunctionParser\Token')
+            ->setConstructorArgs(array($value))
+            ->getMock() : null;
+    }
+
+    /**
+     * Data provider for testOffsetUnsetWorksProperly
+     */
+    public function dataOffsetUnsetWorksProperly()
+    {
+        return array(
+            array( 0,  5,  5, 24 ),
+            array( 14, 5,  5, 24 ),
+            array( 24, 24, 0, 24 ),
+            array( 30, 5,  5, 25 ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::offsetUnset
-     * @todo   Implement testOffsetUnset().
+     * @group unit
+     * @dataProvider dataOffsetUnsetWorksProperly
      */
-    public function testOffsetUnset()
+    public function testOffsetUnset($offset, $starting_key, $ending_key, $ending_count)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->tokenizer->seek($starting_key);
+        unset($this->tokenizer[$offset]);
+        $this->assertEquals($ending_key, $this->tokenizer->key());
+        $this->assertEquals($ending_count, $this->tokenizer->count());
     }
 
     /**
      * @covers FunctionParser\Tokenizer::count
-     * @todo   Implement testCount().
+     * @group unit
      */
     public function testCount()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals(25, count($this->tokenizer));
     }
 
     /**
