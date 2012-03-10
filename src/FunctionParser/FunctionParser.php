@@ -54,11 +54,11 @@ class FunctionParser
         }
 
         $this->reflection = $reflection;
-        $this->tokenizer  = $this->_fetchTokenizer();
-        $this->parameters = $this->_fetchParameters();
-        $this->code       = $this->_parseCode();
-        $this->body       = $this->_parseBody();
-        $this->context    = $this->_parseContext();
+        $this->tokenizer  = $this->fetchTokenizer();
+        $this->parameters = $this->fetchParameters();
+        $this->code       = $this->parseCode();
+        $this->body       = $this->parseBody();
+        $this->context    = $this->parseContext();
     }
 
     public function getReflection()
@@ -106,7 +106,7 @@ class FunctionParser
         return null;
     }
 
-    public function _fetchParameters()
+    protected function fetchParameters()
     {
         return array_map(
             function(\ReflectionParameter $param) {
@@ -116,7 +116,7 @@ class FunctionParser
         );
     }
 
-    protected function _fetchTokenizer()
+    protected function fetchTokenizer()
     {
         // Load the file containing the code for the function
         $file = new \SplFileObject($this->reflection->getFileName());
@@ -134,18 +134,17 @@ class FunctionParser
             $file->next();
         }
 
-        // Eliminate code that is (for sure) not a part of the function
-        $beginning = strpos($code, 'function');
-        $ending    = strrpos($code, '}');
-        $code      = trim(substr($code, $beginning, $ending - $beginning + 1));
-
-        // Finally, instantiate the tokenizer with the code
+        // Setup the tokenizer with the code from the file
         $tokenizer = new Tokenizer($code);
+
+        // Eliminate tokens that are definitely not a part of the function code
+        $start     = $tokenizer->findToken(T_FUNCTION);
+        $finish    = $tokenizer->findToken('}', -1);
+        $tokenizer = $tokenizer->getTokenRange($start, $finish + 1);
 
         return $tokenizer;
     }
-
-    protected function _parseCode()
+    protected function parseCode()
     {
         $brace_level      = 0;
         $parsed_code      = '';
@@ -208,13 +207,15 @@ class FunctionParser
          */
         if (!$parsing_complete)
         {
+            // @codeCoverageIgnoreStart
             throw new \RuntimeException('Cannot parse the function because the code appeared to be invalid.');
+            // @codeCoverageIgnoreEnd
         }
 
         return $parsed_code;
     }
 
-    protected function _parseBody()
+    protected function parseBody()
     {
         // Remove the function signature and outer braces
         $beginning = strpos($this->code, '{');
@@ -224,7 +225,7 @@ class FunctionParser
         return $body;
     }
 
-    protected function _parseContext()
+    protected function parseContext()
     {
         $context = array();
 

@@ -32,12 +32,12 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function __construct($code)
     {
-        // @codeCoverageIgnoreStart
         if (!function_exists('token_get_all'))
         {
+            // @codeCoverageIgnoreStart
             throw new \RuntimeException('The PHP tokenizer must be enabled to use this class.');
+            // @codeCoverageIgnoreEnd
         }
-        // @codeCoverageIgnoreEnd
 
         if (is_string($code))
         {
@@ -109,7 +109,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @param string|integer $search The token's literal code or name.
      * @param integer $offset The offset to start searching from. A negative offest searches from the end.
-     * @return \FunctionParser\Token The token that has been found or null.
+     * @return integer|boolean The index of the token that has been found or false.
      */
     public function findToken($search, $offset = 0)
     {
@@ -125,13 +125,15 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         if ($offset >= 0)
         {
             // Offset is greater than zero. Search from left to right
-            $tokenizer = clone $this;
+            $tokenizer   = clone $this;
+            $is_reversed = false;
         }
         else
         {
             // Offset is negative. Search from right to left
-            $tokenizer = new Tokenizer(array_reverse($this->tokens));
-            $offset    = abs($offset) - 1;
+            $tokenizer   = new Tokenizer(array_reverse($this->tokens));
+            $offset      = abs($offset) - 1;
+            $is_reversed = true;
         }
 
         // Seek to the offset and start the search from there
@@ -144,13 +146,21 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
 
             if ($token->code === $search || $token->name === $search || $token->value === $search)
             {
-                return $token;
+                $index = $tokenizer->key();
+
+                // Calculate the index as if the tokenizer is not reversed
+                if ($is_reversed)
+                {
+                    $index = count($tokenizer) - $index - 1;
+                }
+
+                return $index;
             }
 
             $tokenizer->next();
         }
 
-        return null;
+        return false;
     }
 
     /**

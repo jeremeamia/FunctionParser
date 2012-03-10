@@ -24,7 +24,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::__construct
-     * @group unit
      */
     public function testConstructorAcceptsCodeAsString()
     {
@@ -34,7 +33,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::__construct
-     * @group unit
      */
     public function testConstructorAcceptsArrayOfTokens()
     {
@@ -54,7 +52,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::__construct
-     * @group unit
      * @expectedException \InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnInvalidArgument()
@@ -77,7 +74,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::getNextToken
-     * @group unit
      * @dataProvider dataCanGetNextToken
      */
     public function testCanGetNextToken($seek_value, $next_token_value, $next_token_index)
@@ -104,7 +100,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::getPreviousToken
-     * @group unit
      * @dataProvider dataCanGetPreviousToken
      */
     public function testCanGetPreviousToken($seek_value, $next_token_value, $next_token_index)
@@ -130,7 +125,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::hasMoreTokens
-     * @group unit
      * @dataProvider dataHasMoreTokensWorksProperly
      */
     public function testHasMoreTokensWorksProperly($seek_value, $return_value)
@@ -145,28 +139,27 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     public function dataFindTokenWorksProperly()
     {
         return array(
-            array( T_STRING,   0,  'fooize' ),
-            array( T_STRING,   5,  'join'   ),
-            array( T_STRING,   -1, 'join'   ),
-            array( 'T_STRING', 0,  'fooize' ),
-            array( 'T_STRING', 5,  'join'   ),
-            array( 'T_STRING', -1, 'join'   ),
-            array( 'fooize',   0,  'fooize' ),
-            array( 'join',     5,  'join'   ),
-            array( 'join',     -1, 'join'   ),
-            array( 'cheese',   0,  null     ),
+            array( T_STRING,   0,  2     ),
+            array( T_STRING,   5,  14    ),
+            array( T_STRING,   -1, 14    ),
+            array( 'T_STRING', 0,  2     ),
+            array( 'T_STRING', 5,  14    ),
+            array( 'T_STRING', -1, 14    ),
+            array( 'fooize',   0,  2     ),
+            array( 'join',     5,  14    ),
+            array( 'join',     -1, 14    ),
+            array( 'cheese',   0,  false ),
         );
     }
 
     /**
      * @covers FunctionParser\Tokenizer::findToken
-     * @group unit
      * @dataProvider dataFindTokenWorksProperly
      */
     public function testFindTokenWorksProperly($search, $offset, $result)
     {
-        $token = $this->tokenizer->findToken($search, $offset);
-        $this->assertEquals($result, $token ? $token->getCode() : null);
+        $index = $this->tokenizer->findToken($search, $offset);
+        $this->assertEquals($result, $index);
     }
 
     /**
@@ -184,7 +177,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::findToken
-     * @group unit
      * @dataProvider dataFindTokenThrowsExceptionOnBadArgs
      * @expectedException \InvalidArgumentException
      */
@@ -195,7 +187,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::hasToken
-     * @group unit
      */
     public function testHasTokenReturnsTrueOnExistingToken()
     {
@@ -204,7 +195,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::getTokenRange
-     * @group unit
      */
     public function testGetTokenRangeGetsTheCorrectTokens()
     {
@@ -214,7 +204,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::appendTokens
-     * @group unit
      */
     public function testAppendTokensCorrectlyAddsTokensToTheEnd()
     {
@@ -227,7 +216,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::prependTokens
-     * @group unit
      */
     public function testPrependTokensCorrectlyAddsTokensToTheBeginning()
     {
@@ -240,7 +228,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::getFirst
-     * @group unit
      */
     public function testGetFirstReturnsTheFirstToken()
     {
@@ -249,7 +236,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::getLast
-     * @group unit
      */
     public function testGetLastReturnsTheLastToken()
     {
@@ -258,7 +244,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::current
-     * @group unit
      */
     public function testCurrentFeatureOfIteratorWorks()
     {
@@ -267,7 +252,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::next
-     * @group unit
      */
     public function testNextFeatureOfIteratorWorks()
     {
@@ -278,7 +262,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::prev
-     * @group unit
      */
     public function testPrevFeatureOfIteratorWorks()
     {
@@ -289,7 +272,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::key
-     * @group unit
      */
     public function testKeyFeatureOfIteratorWorks()
     {
@@ -313,7 +295,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Tokenizer::valid
      * @dataProvider dataValidFeatureOfIteratorWorks
-     * @group unit
      */
     public function testValidFeatureOfIteratorWorks($seek, $result)
     {
@@ -323,7 +304,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::rewind
-     * @group unit
      */
     public function testRewindFeatureOfIteratorWorks()
     {
@@ -333,7 +313,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::seek
-     * @group unit
      */
     public function testSeekFeatureOfIteratorWorks()
     {
@@ -343,7 +322,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetExists
-     * @group unit
      * @dataProvider dataValidFeatureOfIteratorWorks
      */
     public function testOffsetExistsWorksProperly($offset, $result)
@@ -367,7 +345,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetGet
-     * @group unit
      * @dataProvider dataOffsetGetWorksProperly
      */
     public function testOffsetGetWorksProperly($offset, $result)
@@ -390,7 +367,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetSet
-     * @group unit
      * @dataProvider dataOffsetSetWorksProperly
      */
     public function testOffsetSetWorksProperly($offset, $token_value)
@@ -418,7 +394,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetSet
-     * @group unit
      * @dataProvider dataOffsetSetThrowsExceptionOnInvalidArgs
      * @expectedException \InvalidArgumentException
      */
@@ -444,7 +419,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::offsetUnset
-     * @group unit
      * @dataProvider dataOffsetUnsetWorksProperly
      */
     public function testOffsetUnsetWorksProperly($offset, $starting_key, $ending_key, $ending_count)
@@ -457,7 +431,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::count
-     * @group unit
      */
     public function testCountCorrectlyGetsNumberOfTokens()
     {
@@ -467,7 +440,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Tokenizer::serialize
      * @covers FunctionParser\Tokenizer::unserialize
-     * @group unit
      */
     public function testSerializingAndUnserializingDoesNotAlterTokenizer()
     {
@@ -479,7 +451,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Tokenizer::asString
      * @covers FunctionParser\Tokenizer::__toString
-     * @group unit
      */
     public function testConvertingToStringReturnsCode()
     {
@@ -489,7 +460,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\Tokenizer::asArray
      * @covers FunctionParser\Tokenizer::__toString
-     * @group unit
      */
     public function testConvertingToArrayReturnsTokens()
     {
