@@ -18,10 +18,3 @@ available.
 
     $parser = new FunctionParser(new \ReflectionFunction($closure));
     $code   = $parser->getCode();
-
-## TODO
-
-- Unit tests
-- Doc blocks
-- General documentation
-- Code style consistency
