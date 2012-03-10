@@ -186,7 +186,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function prependTokens(Tokenizer $new_tokens)
     {
-        $this->tokens = array_merge($new_tokens->toArray(), $this->tokens);
+        $this->tokens = array_merge($new_tokens->asArray(), $this->tokens);
         $this->rewind();
 
         return $this;
@@ -200,7 +200,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function appendTokens(Tokenizer $new_tokens)
     {
-        $this->tokens = array_merge($this->tokens, $new_tokens->toArray());
+        $this->tokens = array_merge($this->tokens, $new_tokens->asArray());
         $this->rewind();
 
         return $this;
@@ -400,7 +400,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return array The array of tokens.
      */
-    public function toArray()
+    public function asArray()
     {
         return $this->tokens;
     }
@@ -410,7 +410,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return string The string of code.
      */
-    public function toString()
+    public function asString()
     {
         $code = '';
 
@@ -429,6 +429,6 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      */
     public function __toString()
     {
-        return $this->toString();
+        return $this->asString();
     }
 }

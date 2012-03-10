@@ -11,9 +11,15 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      */
     public $tokenizer;
 
+    /**
+     * $var string The code to tokenize.
+     */
+    public $code;
+
     public function setUp()
     {
-        $this->tokenizer = new Tokenizer('function fooize(array $bar) {return \'foo(\'.join(\',\', $bar).\')\';}');
+        $this->code = 'function fooize(array $bar) {return \'foo(\'.join(\',\', $bar).\')\';}';
+        $this->tokenizer = new Tokenizer($this->code);
     }
 
     /**
@@ -189,26 +195,65 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers FunctionParser\Tokenizer::hasToken
-     * @todo   Implement testHasToken().
+     * @group unit
      */
-    public function testHasToken()
+    public function testHasTokenReturnsTrueOnExistingToken()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertTrue($this->tokenizer->hasToken(T_STRING));
     }
 
     /**
      * @covers FunctionParser\Tokenizer::getTokenRange
-     * @todo   Implement testGetTokenRange().
+     * @group unit
      */
-    public function testGetTokenRange()
+    public function testGetTokenRangeGetsTheCorrectTokens()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $range = 'fooize(array $bar)';
+        $this->assertEquals($range, $this->tokenizer->getTokenRange(2, 8)->asString());
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::appendTokens
+     * @group unit
+     */
+    public function testAppendTokensCorrectlyAddsTokensToTheEnd()
+    {
+        $new_code = 'var_dump($foo);';
+        $new_tokens = new Tokenizer($new_code);
+        $this->tokenizer->appendTokens($new_tokens);
+        $this->assertEquals(30, $this->tokenizer->count());
+        $this->assertEquals($new_code, substr($this->tokenizer, strlen($this->tokenizer) - strlen($new_code)));
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::prependTokens
+     * @group unit
+     */
+    public function testPrependTokensCorrectlyAddsTokensToTheBeginning()
+    {
+        $new_code = 'var_dump($foo);';
+        $new_tokens = new Tokenizer($new_code);
+        $this->tokenizer->prependTokens($new_tokens);
+        $this->assertEquals(30, $this->tokenizer->count());
+        $this->assertEquals($new_code, substr($this->tokenizer, 0, strlen($new_code)));
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::getFirst
+     * @group unit
+     */
+    public function testGetFirstReturnsTheFirstToken()
+    {
+        $this->assertEquals('function', $this->tokenizer->getFirst()->getCode());
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::getLast
+     * @group unit
+     */
+    public function testGetLastReturnsTheLastToken()
+    {
+        $this->assertEquals('}', $this->tokenizer->getLast()->getCode());
     }
 
     /**
@@ -402,7 +447,7 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      * @group unit
      * @dataProvider dataOffsetUnsetWorksProperly
      */
-    public function testOffsetUnset($offset, $starting_key, $ending_key, $ending_count)
+    public function testOffsetUnsetWorksProperly($offset, $starting_key, $ending_key, $ending_count)
     {
         $this->tokenizer->seek($starting_key);
         unset($this->tokenizer[$offset]);
@@ -414,44 +459,47 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\Tokenizer::count
      * @group unit
      */
-    public function testCount()
+    public function testCountCorrectlyGetsNumberOfTokens()
     {
         $this->assertEquals(25, count($this->tokenizer));
     }
 
     /**
      * @covers FunctionParser\Tokenizer::serialize
-     * @todo   Implement testSerialize().
-     */
-    public function testSerialize()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
      * @covers FunctionParser\Tokenizer::unserialize
-     * @todo   Implement testUnserialize().
+     * @group unit
      */
-    public function testUnserialize()
+    public function testSerializingAndUnserializingDoesNotAlterTokenizer()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $serialized   = serialize($this->tokenizer);
+        $unserialized = unserialize($serialized);
+        $this->assertEquals($this->tokenizer, $unserialized);
     }
 
     /**
-     * @covers FunctionParser\Tokenizer::getString
-     * @todo   Implement testGetString().
+     * @covers FunctionParser\Tokenizer::asString
+     * @covers FunctionParser\Tokenizer::__toString
+     * @group unit
      */
-    public function testGetString()
+    public function testConvertingToStringReturnsCode()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals($this->code, (string) $this->tokenizer);
+    }
+
+    /**
+     * @covers FunctionParser\Tokenizer::asArray
+     * @covers FunctionParser\Tokenizer::__toString
+     * @group unit
+     */
+    public function testConvertingToArrayReturnsTokens()
+    {
+        $tokens = array();
+
+        foreach ($this->tokenizer as $token)
+        {
+            $tokens[] = $token;
+        }
+
+        $this->assertEquals($tokens, $this->tokenizer->asArray());
     }
 }
