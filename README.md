@@ -2,6 +2,8 @@
 
 FunctionParser by Jeremy Lindblom.
 
+[![Build Status](https://secure.travis-ci.org/jeremeamia/FunctionParser.png?branch=master)](http://travis-ci.org/jeremeamia/FunctionParser)
+
 ## Introduction
 
 The FunctionParser has the ability to take a reflected function or method and retrieve it's code. In the case of a
