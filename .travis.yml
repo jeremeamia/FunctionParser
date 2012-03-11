@@ -5,8 +5,8 @@ php:
   - 5.4
 
 before_script:
-  - wget --quiet http://getcomposer.org/composer.phar
-  - php composer.phar install --install-suggests
-  - cp phpunit.xml.dist phpunit.xml
+  - wget --quiet http://getcomposer.org/composer.phar # Install Composer
+  - php composer.phar install --install-suggests      # Install dependencies
+  - cp phpunit.xml.dist phpunit.xml                   # Setup PHPUnit config
 
 script: sudo phpunit --coverage-text
