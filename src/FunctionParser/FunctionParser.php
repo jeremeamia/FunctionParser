@@ -15,13 +15,43 @@ namespace FunctionParser;
  */
 class FunctionParser
 {
+    /**
+     * @var \ReflectionFunctionAbstract The reflected function.
+     */
     protected $reflection;
+
+    /**
+     * @var array An array of the function's parameter names.
+     */
     protected $parameters;
+
+    /**
+     * @var Tokenizer The tokenizer holding the tokenized code of the function.
+     */
     protected $tokenizer;
+
+    /**
+     * @var string The code of the entire function.
+     */
     protected $code;
+
+    /**
+     * @var string The code of only the body of the function.
+     */
     protected $body;
+
+    /**
+     * @var array An array of variables from the "use" statement of closure.
+     */
     protected $context;
 
+    /**
+     * A factory method that creates a FunctionParser from any PHP callable.
+     *
+     * @param mixed $callable A PHP callable to be parsed.
+     * @return FunctionParser An instance of FunctionParser.
+     * @throws \InvalidArgumentException
+     */
     public static function fromCallable($callable)
     {
         if (!is_callable($callable))
@@ -46,6 +76,11 @@ class FunctionParser
         return new static($reflection);
     }
 
+    /**
+     * Constructs a FunctionParser from a reflected function. Triggers all code parsing from the constructor.
+     *
+     * @param \ReflectionFunctionAbstract $reflection The reflected function or method.
+     */
     public function __construct(\ReflectionFunctionAbstract $reflection)
     {
         if (!$reflection->isUserDefined())
@@ -166,7 +201,7 @@ class FunctionParser
                 if ($token->is(T_FUNCTION))
                 {
                     throw new \RuntimeException('Cannot parse the function; multiple, non-nested functions were defined'
-                        . 'in the code block containing the desired function.');
+                        . ' in the code block containing the desired function.');
                 }
                 else
                 {
