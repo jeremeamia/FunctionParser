@@ -3,5 +3,4 @@ vendor/*
 build/*
 .DS_Store
 cache.properties
-composer.lock
 phpunit.xml
