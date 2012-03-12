@@ -9,7 +9,7 @@ namespace FunctionParser;
  * into Token objects and allows iteration and seeking through the collection of tokens.
  *
  * @package FunctionParser
- * @author Jeremy Lindblom
+ * @author  Jeremy Lindblom
  * @license MIT
  */
 class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Serializable
