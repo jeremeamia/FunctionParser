@@ -103,7 +103,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\FunctionParser::getTokenizer
      * @covers FunctionParser\FunctionParser::fetchTokenizer
      */
-    public function testGetTokenizer()
+    public function testGetTokenizerReturnsTheTokenzier()
     {
         $this->assertInstanceOf('\FunctionParser\Tokenizer', $this->functionParser->getTokenizer());
     }
@@ -112,7 +112,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\FunctionParser::getCode
      * @covers FunctionParser\FunctionParser::parseCode
      */
-    public function testGetCode()
+    public function testGetCodeReturnsTheActualCode()
     {
         $code = 'function($multiplier) use(&$iterations) {
             return $multiplier * $iterations++;
@@ -125,7 +125,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\FunctionParser::parseCode
      * @expectedException \RuntimeException
      */
-    public function testGetCode2()
+    public function testGetCodeThrowsExceptionWhenThereAreMultipleFunctionsPerLine()
     {
         $function = function() {return true;};function() {return false;};
         $parser = FunctionParser::fromCallable($function)->getCode();
@@ -135,7 +135,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\FunctionParser::getBody
      * @covers FunctionParser\FunctionParser::parseBody
      */
-    public function testGetBody()
+    public function testGetBodyReturnsOnlyTheInnerPartOfTheCode()
     {
         $code = '            return $multiplier * $iterations++;';
 
@@ -146,7 +146,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      * @covers FunctionParser\FunctionParser::getContext
      * @covers FunctionParser\FunctionParser::parseContext
      */
-    public function testGetContext()
+    public function testGetContextReturnsTheClosuresContext()
     {
         $this->assertEquals(array('iterations'), array_keys($this->functionParser->getContext()));
     }
@@ -154,7 +154,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\FunctionParser::getClass
      */
-    public function testGetClass()
+    public function testGetClassReturnsNullForNonMethods()
     {
         $this->assertNull($this->functionParser->getClass());
     }
@@ -162,7 +162,7 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers FunctionParser\FunctionParser::getClass
      */
-    public function testGetClass2()
+    public function testGetClassReturnsTheClassNameForMethods()
     {
         $parser = FunctionParser::fromCallable('\FunctionParser\FunctionParser::getClass');
         $this->assertEquals('FunctionParser\FunctionParser', $parser->getClass()->getName());
