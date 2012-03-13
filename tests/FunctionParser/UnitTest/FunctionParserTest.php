@@ -87,7 +87,22 @@ class FunctionParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetNameReturnsTheFunctionName()
     {
-        $this->assertEquals('FunctionParser\UnitTest\{closure}', $this->functionParser->getName());
+        if (!function_exists('\FunctionParser\UnitTest\foo'))
+        {
+            function foo() {return true;}
+        }
+
+        $parser = FunctionParser::fromCallable('\FunctionParser\UnitTest\foo');
+
+        $this->assertEquals('FunctionParser\UnitTest\foo', $parser->getName());
+    }
+
+    /**
+     * @covers FunctionParser\FunctionParser::getName
+     */
+    public function testGetNameReturnsNullIfClosure()
+    {
+        $this->assertNull($this->functionParser->getName());
     }
 
     /**
