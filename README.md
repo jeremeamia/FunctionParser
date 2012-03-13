@@ -61,10 +61,10 @@ Then run `php composer.phar install --install-suggests` from your project's root
 ## Building
 
 There is a `buid.xml` file that you can use to generate test coverage reports, documenation, and code analytics. The
-current fule is deisgned to be used with `ant`, but I will be migrating this to `phing` sometime soon. More on this later.
+current file is designed to be used with `ant`, but I will be migrating this to `phing` sometime soon. More on this later.
 
 The test suite and code coveage report are currently setup to run in Travis CI. [See FunctionParser on Travis CI]
-[travis-ci-status]
+[travis-ci]
 
 
 
