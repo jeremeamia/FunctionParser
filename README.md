@@ -70,6 +70,7 @@ The test suite and code coveage report are currently setup to run in Travis CI. 
 
 - [FunctionParser on Travis CI][travis-ci]
 - [FunctionParser on Packagist][packagist]
+- [FunctionParser on Ohloh][ohloh]
 
 
 
@@ -77,3 +78,4 @@ The test suite and code coveage report are currently setup to run in Travis CI. 
 [travis-ci]:        http://travis-ci.org/jeremeamia/FunctionParser
 [super-closure]:    https://github.com/jeremeamia/super_closure
 [packagist]:        http://packagist.org/packages/jeremeamia/FunctionParser
+[ohloh]:            https://www.ohloh.net/p/php-function-parser
