@@ -66,8 +66,14 @@ current file is designed to be used with `ant`, but I will be migrating this to 
 The test suite and code coveage report are currently setup to run in Travis CI. [See FunctionParser on Travis CI]
 [travis-ci]
 
+## Links
+
+- [FunctionParser on Travis CI][travis-ci]
+- [FunctionParser on Packagist][packagist]
+
 
 
 [travis-ci-status]: https://secure.travis-ci.org/jeremeamia/FunctionParser.png?branch=master
 [travis-ci]:        http://travis-ci.org/jeremeamia/FunctionParser
 [super-closure]:    https://github.com/jeremeamia/super_closure
+[packagist]:        http://packagist.org/packages/jeremeamia/FunctionParser
