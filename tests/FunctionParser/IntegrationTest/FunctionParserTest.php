@@ -172,4 +172,15 @@ CODE;
         $parser = FunctionParser::fromCallable($doCrazyStringInterpolation);
         $this->assertEquals($code, $parser->getCode());
     }
+
+    public function testParseFunctionWithNamespaceTypeHintCorrectly()
+    {
+        $func = function (FunctionParser $parser1, $foo, Traversable $trav, array $array = array()) {};
+        $code = <<< 'CODE'
+function (\FunctionParser\FunctionParser $parser1, $foo, \Traversable $trav, array $array = array()) {}
+CODE;
+
+        $parser = FunctionParser::fromCallable($func);
+        $this->assertEquals($code, $parser->getCode());
+    }
 }

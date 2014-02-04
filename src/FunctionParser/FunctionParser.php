@@ -249,9 +249,11 @@ class FunctionParser
      */
     protected function parseCode()
     {
-        $brace_level      = 0;
-        $parsed_code      = '';
-        $parsing_complete = false;
+        $brace_level       = 0;
+        $parsed_code       = '';
+        $parsing_complete  = false;
+        $parameter_index   = 0;
+        $inside_parameters = false;
 
         // Parse the code looking for the end of the function
         /** @var $token \FunctionParser\Token */
@@ -297,6 +299,19 @@ class FunctionParser
                 {
                     $parsing_complete = true;
                 }
+            } elseif ($brace_level === 0 && $token->is('(')) {
+                $inside_parameters = true;
+            // Special case for parameters with type hints
+            } elseif ($brace_level === 0 && $inside_parameters && $token->is(T_STRING)) {
+                $parameters = $this->reflection->getParameters();
+                $parameter = $parameters[$parameter_index++];
+
+                if ($parameter->getClass()) {
+                    $parsed_code .= '\\' . $parameter->getClass()->getName();
+                } else {
+                    $parsed_code .= '\\' . $token->code;
+                }
+                continue;
             }
 
             // Reconstruct the code token by token
