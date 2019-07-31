@@ -376,7 +376,7 @@ class FunctionParser
             // Construct the context by combining the variable names and values
             foreach ($variable_names as $variable_name)
             {
-                if (isset($variable_values[$variable_name]))
+                if (array_key_exists($variable_name, $variable_values))
                 {
                     $context[$variable_name] = $variable_values[$variable_name];
                 }
