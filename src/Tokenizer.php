@@ -12,7 +12,7 @@ namespace FunctionParser;
  * @author  Jeremy Lindblom
  * @license MIT
  */
-class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Serializable
+class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess
 {
     /**
      * @var array The array of tokens.
@@ -67,6 +67,31 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
         }
 
         $this->index = 0;
+    }
+
+    /**
+     * Serializes the tokenizer.
+     *
+     * @return string The serialized tokenizer.
+     */
+    public function __serialize()
+    {
+        return serialize(array(
+            'tokens' => $this->tokens,
+            'index'  => $this->index,
+        ));
+    }
+
+    /**
+     * Unserialize the tokenizer.
+     *
+     * @param string $serialized The serialized tokenizer.
+     */
+    public function __unserialize($serialized)
+    {
+        $unserialized = unserialize($serialized);
+        $this->__construct($unserialized['tokens']);
+        $this->seek($unserialized['index']);
     }
 
     /**
@@ -245,7 +270,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return \FunctionParser\Token The current token.
      */
-    public function current()
+    public function current() : mixed
     {
         return $this->tokens[$this->index];
     }
@@ -253,7 +278,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
     /**
      * Move to the next token.
      */
-    public function next()
+    public function next() : void
     {
         $this->index++;
     }
@@ -261,7 +286,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
     /**
      * Move to the previous token.
      */
-    public function prev()
+    public function prev() : void
     {
         $this->index--;
     }
@@ -271,7 +296,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return integer The token's index.
      */
-    public function key()
+    public function key() : mixed
     {
         return $this->index;
     }
@@ -281,7 +306,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return boolean True if the current token exists.
      */
-    public function valid()
+    public function valid() : bool
     {
         return array_key_exists($this->index, $this->tokens);
     }
@@ -289,7 +314,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
     /**
      * Move to the first token.
      */
-    public function rewind()
+    public function rewind() : void
     {
         $this->index = 0;
     }
@@ -299,7 +324,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @param integer $index The index to seek to.
      */
-    public function seek($index)
+    public function seek($index) : void
     {
         $this->index = (integer) $index;
     }
@@ -310,7 +335,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      * @param integer $offset The offset to check.
      * @return boolean Whether or not the offset exists.
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset) : bool
     {
         return is_integer($offset) && array_key_exists($offset, $this->tokens);
     }
@@ -321,7 +346,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      * @param integer $offset The offset to get.
      * @return \FunctionParser\Token The token at the offset.
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset) : mixed
     {
         return $this->tokens[$offset];
     }
@@ -333,7 +358,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      * @param \FunctionParser\Token The token to set.
      * @throws \InvalidArgumentException
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value) : void
     {
         if (!(is_integer($offset) && $offset >= 0 && $offset <= $this->count()))
         {
@@ -353,7 +378,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @param integer $offset The offset to unset.
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset) : void
     {
         if ($this->offsetExists($offset))
         {
@@ -375,7 +400,7 @@ class Tokenizer implements \SeekableIterator, \Countable, \ArrayAccess, \Seriali
      *
      * @return integer The number of tokens.
      */
-    public function count()
+    public function count() : int
     {
         return count($this->tokens);
     }

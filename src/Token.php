@@ -18,7 +18,7 @@ namespace FunctionParser;
  * @property integer $line
  * @property integer $value
  */
-class Token implements \Serializable
+class Token
 {
     /**
      * @var string The token name.
@@ -65,6 +65,26 @@ class Token implements \Serializable
         {
             throw new \InvalidArgumentException('The token was invalid.');
         }
+    }
+
+    /**
+     * Serializes the token.
+     *
+     * @return string The serialized token.
+     */
+    public function __serialize()
+    {
+        return serialize(array($this->name, $this->value, $this->code, $this->line));
+    }
+
+    /**
+     * Unserializes the token
+     *
+     * @param string $serialized The serialized token
+     */
+    public function __unserialize($serialized)
+    {
+        list($this->name, $this->value, $this->code, $this->line) = unserialize($serialized);
     }
 
     /**
